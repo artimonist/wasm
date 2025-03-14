@@ -1,10 +1,11 @@
 use aes_gcm::{
-    aead::{Aead, AeadCore, KeyInit, OsRng},
+    aead::{Aead, KeyInit},
     Aes256Gcm, Key,
 };
+use rand::Rng;
 use std::sync::LazyLock;
 
-static KEY: LazyLock<Key<Aes256Gcm>> = LazyLock::new(|| Aes256Gcm::generate_key(OsRng));
+static KEY: LazyLock<Key<Aes256Gcm>> = LazyLock::new(|| rand::rng().random::<[u8; 32]>().into());
 
 pub trait Encryptor {
     fn encrypt(&self) -> EncryptResult<Vec<u8>>;
@@ -14,7 +15,7 @@ pub trait Encryptor {
 impl Encryptor for [u8] {
     fn encrypt(&self) -> EncryptResult<Vec<u8>> {
         let cipher = Aes256Gcm::new(&KEY);
-        let nonce = Aes256Gcm::generate_nonce(&mut OsRng); // 96-bits; unique per message
+        let nonce = rand::rng().random::<[u8; 12]>().into();
         let data = cipher.encrypt(&nonce, self)?;
         Ok([nonce.to_vec(), data].concat())
     }
