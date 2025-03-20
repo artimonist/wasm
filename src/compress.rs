@@ -25,19 +25,15 @@ impl Compressor for [u8] {
 
 type CompressResult<T = ()> = Result<T, std::io::Error>;
 
-use artimonist::bitcoin::hex::{DisplayHex, FromHex};
+use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub fn compress(content: &str, compress: bool) -> String {
     if compress {
-        content
-            .as_bytes()
-            .compress()
-            .expect("compress failed.")
-            .to_lower_hex_string()
+        URL_SAFE.encode(content.as_bytes().compress().expect("compress failed."))
     } else {
-        let data = Vec::from_hex(content).expect("invalid hex string.");
+        let data = URL_SAFE.decode(content).expect("invalid hex string.");
         String::from_utf8(data.decompress().expect("decompress failed."))
             .expect("invalid utf8 string.")
     }
@@ -49,8 +45,9 @@ mod tests {
 
     #[test]
     fn test_compress() {
-        let content = "hello world";
+        let content = "xprv9s21ZrQH143K3DsMn27o9Dw3iwDWJa6ztqdbeyVoMm1UjeK4PQYZPqxpyu5hYGm3qzzB2p1HvZHGoEK1Vwu84SvbcuygptA9kguvhXfDVYN";
         let compressed = compress(content, true);
+        println!("compressed: {}", compressed);
         let decompressed = compress(&compressed, false);
         assert_eq!(content, decompressed);
     }

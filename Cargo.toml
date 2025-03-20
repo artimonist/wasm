@@ -1,6 +1,6 @@
 [package]
 name = "artimonist-wasm"
-version = "0.3.0"
+version = "0.3.1"
 description = "Artimonist - A tool for generating mnemonics and wallets."
 authors = ["Artimonist <artimonist@gmail.com>"]
 homepage = "https://artimonist.org/"
@@ -15,19 +15,19 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
+[dependencies]
+wasm-bindgen = "0.2"
+artimonist = "0.11.5"
+flate2 = "1.0.35"
+# custom random of aes for wasm target
+aes-gcm = {version = "0.10.3", default-features = false, features = ["aes", "alloc"]}
+rand = "0.9.0"
+getrandom = {version = "0.3", features=["wasm_js"]} # export RUSTFLAGS='--cfg getrandom_backend="wasm_js"'
+base64 = "0.22.1"
+
 [profile.release]
 lto = true
 opt-level = 'z'
 
 [package.metadata.wasm-pack.profile.profiling]
 wasm-opt = ['-O']
-
-[dependencies]
-wasm-bindgen = "0.2"
-artimonist = "0.11.5"
-flate2 = "1.0.35"
-aes-gcm = {version = "0.10.3", default-features = false, features = ["aes", "alloc"]} # custom random for wasm
-rand = "0.9.0"
-getrandom = {version = "0.3", features=["wasm_js"]}
-
-[dev-dependencies]
